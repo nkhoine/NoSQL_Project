@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head><title>Tổng quan - QLCafe</title></head>
+<body>
+<section>
+    <h3 class="fw-bold mb-4">Bảng điều khiển hệ thống</h3>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card p-4 border-top border-4 border-primary shadow-sm h-100">
+                <h5 class="fw-bold">🛒 Bán hàng POS</h5>
+                <p class="text-muted small">Quản lý gọi món, chuyển bàn và thanh toán hóa đơn.</p>
+                <a href="/banhang" class="btn btn-primary mt-auto">Mở POS</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-4 border-top border-4 border-success shadow-sm h-100">
+                <h5 class="fw-bold">📋 Thực đơn & Kho</h5>
+                <p class="text-muted small">Quản lý danh mục món ăn và nguyên liệu pha chế.</p>
+                <a href="/mon" class="btn btn-success mt-auto">Xem Menu</a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-4 border-top border-4 border-warning shadow-sm h-100">
+                <h5 class="fw-bold">📊 Thống kê</h5>
+                <p class="text-muted small">Xem báo cáo doanh thu theo ngày, nhân viên và top món.</p>
+                <a href="/thongke" class="btn btn-warning mt-auto">Xem báo cáo</a>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>
