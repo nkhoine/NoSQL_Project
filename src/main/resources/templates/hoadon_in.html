@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Hóa đơn ' + ${hd['Mahd']}">Hóa đơn</title>
+    <style>
+        body { font-family: 'Courier New', monospace; width: 300px; margin: 20px auto; font-size: 13px; }
+        h2, .c { text-align: center; margin: 4px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        td, th { padding: 2px 0; text-align: left; }
+        .r { text-align: right; }
+        hr { border: 0; border-top: 1px dashed #000; }
+        .no-print button { width: 100%; padding: 8px; margin-top: 10px; }
+        @media print { .no-print { display: none; } }
+    </style>
+</head>
+<body>
+<h2>☕ QLCafe</h2>
+<div class="c">HÓA ĐƠN THANH TOÁN</div>
+<hr>
+<div>Mã HĐ: <span th:text="${hd['Mahd']}"></span></div>
+<div>Ngày: <span th:text="${#dates.format(hd['Ngaylap'],'dd/MM/yyyy HH:mm')}"></span></div>
+<div>Bàn: <span th:text="${hd['Ban']['Tenban']}"></span></div>
+<div>Thu ngân: <span th:text="${hd['Nhanvien']['Hoten']}"></span></div>
+<div th:if="${hd['Khachhang'] != null}">Khách: <span th:text="${hd['Khachhang']['Tenkh']}"></span></div>
+<hr>
+<table>
+    <tr><th>Món</th><th class="r">SL</th><th class="r">T.tiền</th></tr>
+    <tr th:each="m : ${hd['Mon']}">
+        <td th:text="${m['Tenmon']} + ' (' + ${m['Size']} + ')'"></td>
+        <td class="r" th:text="${m['Soluong']}"></td>
+        <td class="r" th:text="${#numbers.formatInteger(m['Thanhtien'],1,'POINT')}"></td>
+    </tr>
+</table>
+<hr>
+<div>Giảm giá: <span th:text="${#numbers.formatInteger(hd['Giamgia'],1,'POINT')}"></span> đ</div>
+<h3 class="r">TỔNG: <span th:text="${#numbers.formatInteger(hd['Tongtien'],1,'POINT')}"></span> đ</h3>
+<div>Hình thức: <span th:text="${hd['Hinhthuc']}"></span></div>
+<div>Trạng thái: <span th:text="${hd['Trangthai']}"></span></div>
+<hr>
+<div class="c">Cảm ơn quý khách – Hẹn gặp lại!</div>
+<div class="no-print">
+    <button onclick="window.print()">🖨 In hóa đơn</button>
+    <button onclick="location.href='/banhang'">← Quay lại POS</button>
+</div>
+</body>
+</html>

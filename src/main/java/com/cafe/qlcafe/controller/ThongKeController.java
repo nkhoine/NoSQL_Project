@@ -1,5 +1,6 @@
 package com.cafe.qlcafe.controller;
 
+import com.cafe.qlcafe.dao.HoaDonDAO;
 import com.cafe.qlcafe.dao.ThongKeDAO;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 public class ThongKeController {
 
     @Autowired private ThongKeDAO thongKeDAO;
+    @Autowired private HoaDonDAO hoaDonDAO;
 
     @GetMapping
     public String index(@RequestParam(defaultValue = "2026-10") String thang, Model model) {
@@ -27,6 +29,10 @@ public class ThongKeController {
         List<Document> tkHinhThuc = thongKeDAO.thongKeHinhThucThanhToan();
 
         model.addAttribute("thang", thang);
+        model.addAttribute("tongDoanhThu", thongKeDAO.tinhTongDoanhThu());
+        model.addAttribute("tongHoaDon", thongKeDAO.demTongHoaDon());
+        model.addAttribute("banTheoNv", thongKeDAO.cacBanTheoNhanVien());
+        model.addAttribute("hdMoiNhat", hoaDonDAO.layMoiNhat(5));
         model.addAttribute("dtNgay", dtNgay);
         model.addAttribute("topMon", topMon);
         model.addAttribute("dtNv", dtNv);
@@ -35,6 +41,8 @@ public class ThongKeController {
 
         model.addAttribute("ngayLabels", dtNgay.stream().map(d -> d.getString("_id")).collect(Collectors.toList()));
         model.addAttribute("ngayValues", dtNgay.stream().map(d -> ((Number) d.get("Doanhthu")).longValue()).collect(Collectors.toList()));
+        model.addAttribute("nvLabels", dtNv.stream().map(d -> String.valueOf(d.get("_id"))).collect(Collectors.toList()));
+        model.addAttribute("nvValues", dtNv.stream().map(d -> ((Number) d.get("Doanhthu")).longValue()).collect(Collectors.toList()));
         model.addAttribute("monLabels", topMon.stream().map(d -> d.getString("_id")).collect(Collectors.toList()));
         model.addAttribute("monValues", topMon.stream().map(d -> ((Number) d.get("Soluongban")).intValue()).collect(Collectors.toList()));
 

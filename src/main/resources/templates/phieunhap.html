@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head><title>Phiếu nhập - QLCafe</title></head>
+<body>
+<section class="pb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <h1 class="h3 fw-bold mb-0">Phiếu nhập nguyên liệu</h1>
+        <div class="d-flex flex-wrap gap-2">
+            <a th:href="@{/nguyenlieu}" class="btn btn-outline-success">Xem tồn kho</a>
+            <a th:href="@{/mon}" class="btn btn-outline-secondary">Về thực đơn và kho</a>
+        </div>
+    </div>
+    <div th:if="${success}" th:text="${success}" class="alert alert-success" role="status"></div>
+    <div th:if="${error}" th:text="${error}" class="alert alert-danger" role="alert"></div>
+
+    <div class="card card-body shadow-sm mb-4">
+        <h2 class="h5">Tạo phiếu nhập</h2>
+        <p th:if="${#lists.isEmpty(dsNguyenLieu)}" class="mb-0">Thêm nguyên liệu trong kho trước khi lập phiếu.</p>
+        <form th:unless="${#lists.isEmpty(dsNguyenLieu)}" th:action="@{/phieunhap/tao}" method="post">
+            <div class="row g-2">
+                <label class="col-md-4">Nhà cung cấp <input name="nhacungcap" class="form-control" required></label>
+                <label class="col-md-4">Nguyên liệu
+                    <select name="manl" class="form-select" required>
+                        <option value="">Chọn nguyên liệu</option>
+                        <option th:each="nl : ${dsNguyenLieu}" th:value="${nl['Manl']}" th:text="|${nl['Tennl']} (${nl['Donvi']})|"></option>
+                    </select>
+                </label>
+                <label class="col-md-2">Số lượng <input name="soluong" type="number" min="0.001" step="any" class="form-control" required></label>
+                <label class="col-md-2">Đơn giá (đ) <input name="dongia" type="number" min="0" step="any" class="form-control" required></label>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">Lưu phiếu và cộng kho</button>
+        </form>
+    </div>
+
+    <div class="card card-body shadow-sm">
+        <h2 class="h5">Lịch sử nhập kho</h2>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead><tr><th>Mã phiếu</th><th>Ngày nhập</th><th>Nhà cung cấp</th><th>Mã nhân viên</th><th>Chi tiết</th></tr></thead>
+                <tbody>
+                <tr th:each="pn : ${dsPhieuNhap}">
+                    <td th:text="${pn['Mapn']}"></td>
+                    <td th:text="${#dates.format(pn['Ngaynhap'], 'dd/MM/yyyy HH:mm')}"></td>
+                    <td th:text="${pn['Nhacungcap']}"></td>
+                    <td th:text="${pn['Manv']}"></td>
+                    <td><div th:each="ct : ${pn['Chitiet']}" th:text="|${ct['Tennl']} × ${ct['Soluong']} · ${#numbers.formatDecimal(ct['Dongia'], 1, 'POINT', 2, 'COMMA')} đ/đơn vị|"></div></td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(dsPhieuNhap)}"><td colspan="5" class="text-muted">Chưa có phiếu nhập.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

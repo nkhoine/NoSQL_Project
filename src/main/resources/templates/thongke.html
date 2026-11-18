@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head><title>Thống kê - QLCafe</title></head>
+<body>
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">📊 Thống kê doanh thu</h3>
+        <form class="d-flex gap-2" method="get" action="/thongke">
+            <input type="month" name="thang" class="form-control form-control-sm" th:value="${thang}">
+            <button class="btn btn-sm btn-primary">Xem</button>
+        </form>
+    </div>
+
+    <!-- KPI -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 border-start border-4 border-success">
+                <div class="text-muted small">Tổng doanh thu (đã thanh toán)</div>
+                <div class="fs-3 fw-bold" th:text="${#numbers.formatInteger(tongDoanhThu,1,'POINT')} + ' đ'">0 đ</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card shadow-sm p-3 border-start border-4 border-primary">
+                <div class="text-muted small">Số hóa đơn đã thanh toán</div>
+                <div class="fs-3 fw-bold" th:text="${tongHoaDon}">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Biểu đồ -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm p-3">
+                <h6 class="fw-bold">Doanh thu 14 ngày gần nhất</h6>
+                <canvas id="chartNgay" height="110"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm p-3">
+                <h6 class="fw-bold">Top 5 món bán chạy</h6>
+                <canvas id="chartMon"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-12">
+            <div class="card shadow-sm p-3">
+                <h6 class="fw-bold">Doanh thu theo nhân viên</h6>
+                <canvas id="chartNv" height="70"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng số liệu -->
+    <div class="row g-3 mb-4">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">Doanh thu theo bàn – tháng <span th:text="${thang}"></span></div>
+                <table class="table table-sm mb-0">
+                    <thead class="table-light"><tr><th>Bàn</th><th class="text-end">Số HĐ</th><th class="text-end">Doanh thu</th></tr></thead>
+                    <tbody>
+                    <tr th:each="r : ${dtBan}">
+                        <td th:text="${r['_id']}"></td>
+                        <td class="text-end" th:text="${r['Sohd']}"></td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(r['Doanhthu'],1,'POINT')}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(dtBan)}"><td colspan="3" class="text-center text-muted">Không có dữ liệu</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">Theo hình thức thanh toán</div>
+                <table class="table table-sm mb-0">
+                    <thead class="table-light"><tr><th>Hình thức</th><th class="text-end">Số HĐ</th><th class="text-end">TB</th><th class="text-end">Cao nhất</th><th class="text-end">Thấp nhất</th></tr></thead>
+                    <tbody>
+                    <tr th:each="r : ${tkHinhThuc}">
+                        <td th:text="${r['_id']}"></td>
+                        <td class="text-end" th:text="${r['Sohd']}"></td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(r['TB'],1,'POINT')}"></td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(r['Caonhat'],1,'POINT')}"></td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(r['Thapnhat'],1,'POINT')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">Nhân viên đã phục vụ những bàn nào</div>
+                <table class="table table-sm mb-0">
+                    <tbody>
+                    <tr th:each="r : ${banTheoNv}">
+                        <td class="fw-semibold" th:text="${r['_id']}"></td>
+                        <td class="small" th:text="${#strings.listJoin(r['Cacban'], ', ')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">5 hóa đơn mới nhất</div>
+                <table class="table table-sm mb-0">
+                    <thead class="table-light"><tr><th>Mã HĐ</th><th>Bàn</th><th>Ngày lập</th><th class="text-end">Tổng tiền</th></tr></thead>
+                    <tbody>
+                    <tr th:each="h : ${hdMoiNhat}">
+                        <td><a th:href="@{/banhang/in/{m}(m=${h['Mahd']})}" th:text="${h['Mahd']}"></a></td>
+                        <td th:text="${h['Ban']['Tenban']}"></td>
+                        <td th:text="${#dates.format(h['Ngaylap'],'dd/MM/yyyy HH:mm')}"></td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(h['Tongtien'],1,'POINT')}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script th:inline="javascript">
+        const ngayLabels = /*[[${ngayLabels}]]*/ [];
+        const ngayValues = /*[[${ngayValues}]]*/ [];
+        const monLabels  = /*[[${monLabels}]]*/ [];
+        const monValues  = /*[[${monValues}]]*/ [];
+        const nvLabels   = /*[[${nvLabels}]]*/ [];
+        const nvValues   = /*[[${nvValues}]]*/ [];
+        const fmt = v => Number(v).toLocaleString('vi-VN');
+
+        new Chart(document.getElementById('chartNgay'), {
+            type: 'line',
+            data: { labels: ngayLabels, datasets: [{ label: 'Doanh thu (đ)', data: ngayValues,
+                    borderColor: '#198754', backgroundColor: 'rgba(25,135,84,.15)', fill: true, tension: .3 }] },
+            options: { plugins: { tooltip: { callbacks: { label: c => fmt(c.parsed.y) + ' đ' } } },
+                       scales: { y: { ticks: { callback: fmt } } } }
+        });
+        new Chart(document.getElementById('chartMon'), {
+            type: 'doughnut',
+            data: { labels: monLabels, datasets: [{ data: monValues,
+                    backgroundColor: ['#0d6efd','#198754','#ffc107','#dc3545','#6f42c1'] }] },
+            options: { plugins: { legend: { position: 'bottom' } } }
+        });
+        new Chart(document.getElementById('chartNv'), {
+            type: 'bar',
+            data: { labels: nvLabels, datasets: [{ label: 'Doanh thu (đ)', data: nvValues, backgroundColor: '#0d6efd' }] },
+            options: { plugins: { tooltip: { callbacks: { label: c => fmt(c.parsed.y) + ' đ' } } },
+                       scales: { y: { ticks: { callback: fmt } } } }
+        });
+    </script>
+</section>
+</body>
+</html>

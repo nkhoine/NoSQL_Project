@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head><title>Bán hàng POS - QLCafe</title></head>
+<body>
+<section>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">🛒 Bán hàng POS</h3>
+        <a href="/ban" class="btn btn-outline-secondary btn-sm">Quản lý bàn</a>
+    </div>
+
+    <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+    <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+    <div class="row g-3">
+        <!-- Cột trái: danh sách bàn -->
+        <div class="col-lg-3">
+            <div class="card shadow-sm">
+                <div class="card-header fw-bold">Chọn bàn</div>
+                <div class="card-body d-grid gap-2">
+                    <a th:each="b : ${dsBan}" th:href="@{/banhang(maban=${b['Maban']})}"
+                       class="btn btn-sm text-start"
+                       th:classappend="${b['Trangthai'] == 'Trống' ? 'btn-outline-success' : 'btn-danger'} + ${banChon != null and banChon['Maban'] == b['Maban'] ? ' active border-3 border-dark' : ''}">
+                        <span th:text="${b['Tenban']}">Bàn</span>
+                        <small class="float-end" th:text="${b['Trangthai']}">Trống</small>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cột phải -->
+        <div class="col-lg-9">
+            <div class="card shadow-sm p-4 text-center text-muted" th:if="${banChon == null}">
+                Chọn một bàn ở bên trái để bắt đầu.
+            </div>
+
+            <!-- Bàn trống: mở bàn -->
+            <div class="card shadow-sm p-4" th:if="${banChon != null and hoaDonHienTai == null}">
+                <h5 class="fw-bold" th:text="${banChon['Tenban']} + ' – ' + ${banChon['Khuvuc']}">Bàn</h5>
+                <p class="text-muted">Bàn đang trống. Mở bàn để tạo hóa đơn mới.</p>
+                <form method="post" action="/banhang/moban">
+                    <input type="hidden" name="maban" th:value="${banChon['Maban']}">
+                    <button class="btn btn-primary">Mở bàn & gọi món</button>
+                </form>
+            </div>
+
+            <!-- Bàn có hóa đơn -->
+            <div class="row g-3" th:if="${banChon != null and hoaDonHienTai != null}">
+                <!-- Thực đơn -->
+                <div class="col-xl-7">
+                    <div class="card shadow-sm">
+                        <div class="card-header fw-bold">Thực đơn</div>
+                        <ul class="list-group list-group-flush" style="max-height:520px;overflow:auto">
+                            <li class="list-group-item" th:each="m : ${dsMon}">
+                                <form class="d-flex align-items-center gap-2" method="post" action="/banhang/themmon">
+                                    <input type="hidden" name="maban" th:value="${banChon['Maban']}">
+                                    <input type="hidden" name="mahd" th:value="${hoaDonHienTai['Mahd']}">
+                                    <input type="hidden" name="mamon" th:value="${m['Mamon']}">
+                                    <span class="flex-grow-1" th:text="${m['Tenmon']}">Tên món</span>
+                                    <select name="size" class="form-select form-select-sm w-auto">
+                                        <option th:each="s : ${m['Size']}" th:value="${s['Ten']}"
+                                                th:text="${s['Ten']} + ' – ' + ${#numbers.formatInteger(s['Gia'],1,'POINT')} + 'đ'"></option>
+                                    </select>
+                                    <input type="number" name="soluong" value="1" min="1" max="20"
+                                           class="form-control form-control-sm" style="width:64px">
+                                    <button class="btn btn-sm btn-success">+</button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Hóa đơn -->
+                <div class="col-xl-5">
+                    <div class="card shadow-sm">
+                        <div class="card-header fw-bold">
+                            <span th:text="${hoaDonHienTai['Mahd']}">HD</span> ·
+                            <span th:text="${banChon['Tenban']}">Bàn</span>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm mb-0 align-middle">
+                                <thead class="table-light">
+                                <tr><th>Món</th><th class="text-center">SL</th><th class="text-end">T.tiền</th><th></th></tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="it, st : ${hoaDonHienTai['Mon']}">
+                                    <td><span th:text="${it['Tenmon']}">Món</span>
+                                        <small class="text-muted" th:text="'(' + ${it['Size']} + ')'"></small></td>
+                                    <td class="text-center" th:text="${it['Soluong']}">1</td>
+                                    <td class="text-end" th:text="${#numbers.formatInteger(it['Thanhtien'],1,'POINT')}">0</td>
+                                    <td>
+                                        <form method="post" action="/banhang/xoamon">
+                                            <input type="hidden" name="maban" th:value="${banChon['Maban']}">
+                                            <input type="hidden" name="mahd" th:value="${hoaDonHienTai['Mahd']}">
+                                            <input type="hidden" name="index" th:value="${st.index}">
+                                            <button class="btn btn-sm btn-outline-danger py-0">×</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(hoaDonHienTai['Mon'])}">
+                                    <td colspan="4" class="text-center text-muted">Chưa có món nào</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="card-footer fw-bold d-flex justify-content-between">
+                            <span>Tạm tính</span>
+                            <span th:text="${#numbers.formatInteger(hoaDonHienTai['Tongtien'],1,'POINT')} + ' đ'">0 đ</span>
+                        </div>
+                    </div>
+
+                    <!-- Thanh toán -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-header fw-bold">💳 Thanh toán</div>
+                        <div class="card-body">
+                            <form method="post" action="/banhang/thanhtoan"
+                                  onsubmit="return confirm('Xác nhận thanh toán hóa đơn này?')">
+                                <input type="hidden" name="maban" th:value="${banChon['Maban']}">
+                                <input type="hidden" name="mahd" th:value="${hoaDonHienTai['Mahd']}">
+                                <label class="form-label small mb-1">Khách hàng thân thiết (tích điểm)</label>
+                                <select name="makh" class="form-select form-select-sm mb-2">
+                                    <option value="">-- Khách vãng lai --</option>
+                                    <option th:each="k : ${dsKhachHang}" th:value="${k['Makh']}"
+                                            th:text="${k['Tenkh']} + ' · ' + ${k['Dienthoai']}"></option>
+                                </select>
+                                <label class="form-label small mb-1">Giảm giá (đ)</label>
+                                <input type="number" name="giamgia" value="0" min="0" step="1000"
+                                       class="form-control form-control-sm mb-2">
+                                <label class="form-label small mb-1">Hình thức</label>
+                                <select name="hinhthuc" class="form-select form-select-sm mb-3">
+                                    <option>Tiền mặt</option>
+                                    <option>Chuyển khoản</option>
+                                </select>
+                                <button class="btn btn-success w-100 fw-bold"
+                                        th:disabled="${#lists.isEmpty(hoaDonHienTai['Mon'])}">Thanh toán & in hóa đơn</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Chuyển bàn / hủy -->
+                    <div class="card shadow-sm mt-3">
+                        <div class="card-body">
+                            <form class="d-flex gap-2 mb-2" method="post" action="/banhang/chuyenban">
+                                <input type="hidden" name="mabanCu" th:value="${banChon['Maban']}">
+                                <select name="mabanMoi" class="form-select form-select-sm" required>
+                                    <option value="">-- Chuyển sang bàn trống --</option>
+                                    <option th:each="b : ${dsBanTrong}" th:value="${b['Maban']}" th:text="${b['Tenban']}"></option>
+                                </select>
+                                <button class="btn btn-sm btn-warning text-nowrap">Chuyển bàn</button>
+                            </form>
+                            <form method="post" action="/banhang/huy" th:if="${#lists.isEmpty(hoaDonHienTai['Mon'])}">
+                                <input type="hidden" name="maban" th:value="${banChon['Maban']}">
+                                <input type="hidden" name="mahd" th:value="${hoaDonHienTai['Mahd']}">
+                                <button class="btn btn-sm btn-outline-secondary w-100">Hủy hóa đơn trống (mở nhầm bàn)</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

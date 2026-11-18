@@ -55,6 +55,16 @@ public class BanHangController {
         return "redirect:/banhang?maban=" + maban;
     }
 
+    @PostMapping("/huy")
+    public String huy(@RequestParam String maban, @RequestParam String mahd, RedirectAttributes ra) {
+        if (hoaDonDAO.huyHoaDonRong(mahd)) {
+            ra.addFlashAttribute("success", "Đã hủy hóa đơn trống, bàn " + maban + " đã được giải phóng.");
+            return "redirect:/banhang";
+        }
+        ra.addFlashAttribute("error", "Chỉ hủy được hóa đơn chưa có món nào!");
+        return "redirect:/banhang?maban=" + maban;
+    }
+
     @PostMapping("/chuyenban")
     public String chuyenBan(@RequestParam String mabanCu, @RequestParam String mabanMoi, RedirectAttributes ra) {
         if (hoaDonDAO.chuyenBan(mabanCu, mabanMoi)) {
@@ -80,7 +90,9 @@ public class BanHangController {
 
     @GetMapping("/in/{mahd}")
     public String inHoaDon(@PathVariable String mahd, Model model) {
-        model.addAttribute("hd", hoaDonDAO.timTheoMa(mahd));
+        Document hd = hoaDonDAO.timTheoMa(mahd);
+        if (hd == null) return "redirect:/banhang";
+        model.addAttribute("hd", hd);
         return "hoadon_in";
     }
 }

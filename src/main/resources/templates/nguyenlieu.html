@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head><title>Nguyên liệu - QLCafe</title></head>
+<body>
+<section class="pb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <h1 class="h3 fw-bold mb-0">Kho nguyên liệu</h1>
+        <div class="d-flex flex-wrap gap-2">
+            <a th:href="@{/phieunhap}" class="btn btn-success">Lập phiếu nhập</a>
+            <a th:href="@{/mon}" class="btn btn-outline-secondary">Về thực đơn và kho</a>
+        </div>
+    </div>
+    <div th:if="${success}" th:text="${success}" class="alert alert-success" role="status"></div>
+    <div th:if="${error}" th:text="${error}" class="alert alert-danger" role="alert"></div>
+    <div th:unless="${#lists.isEmpty(dsSapHet)}" class="alert alert-warning" role="status">
+        <strong>Nguyên liệu đã chạm mức tồn tối thiểu</strong>
+        <ul class="mb-0 mt-1">
+            <li th:each="nl : ${dsSapHet}" th:text="|${nl['Tennl']} · còn ${nl['Tonkho']} ${nl['Donvi']} (tối thiểu ${nl['Toithieu']})|"></li>
+        </ul>
+    </div>
+
+    <details class="card shadow-sm mb-3">
+        <summary class="card-body fw-semibold">Thêm nguyên liệu</summary>
+        <form th:action="@{/nguyenlieu/them}" method="post" class="card-body border-top">
+            <div class="row g-2">
+                <label class="col-md-2">Mã <input name="manl" class="form-control" required></label>
+                <label class="col-md-4">Tên nguyên liệu <input name="tennl" class="form-control" required></label>
+                <label class="col-md-2">Đơn vị <input name="donvi" class="form-control" required></label>
+                <label class="col-md-2">Tồn kho <input name="tonkho" type="number" min="0" step="any" class="form-control" required></label>
+                <label class="col-md-2">Tối thiểu <input name="toithieu" type="number" min="0" step="any" class="form-control" required></label>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">Lưu nguyên liệu</button>
+        </form>
+    </details>
+
+    <div class="card shadow-sm">
+        <div class="card-body table-responsive">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>Mã</th><th>Nguyên liệu</th><th>Đơn vị</th><th class="text-end">Tồn kho</th><th class="text-end">Tối thiểu</th><th>Thao tác</th></tr></thead>
+                <tbody>
+                <tr th:each="nl : ${dsNguyenLieu}" th:classappend="${nl['Tonkho'] <= nl['Toithieu']} ? 'table-warning'">
+                    <td th:text="${nl['Manl']}"></td>
+                    <td th:text="${nl['Tennl']}"></td>
+                    <td th:text="${nl['Donvi']}"></td>
+                    <td class="text-end" th:text="${nl['Tonkho']}"></td>
+                    <td class="text-end" th:text="${nl['Toithieu']}"></td>
+                    <td>
+                        <details>
+                            <summary>Sửa nguyên liệu</summary>
+                            <form th:action="@{/nguyenlieu/sua}" method="post" class="mt-2">
+                                <input type="hidden" name="manl" th:value="${nl['Manl']}">
+                                <label class="w-100">Tên <input name="tennl" class="form-control form-control-sm" th:value="${nl['Tennl']}" required></label>
+                                <label class="w-100 mt-1">Đơn vị <input name="donvi" class="form-control form-control-sm" th:value="${nl['Donvi']}" required></label>
+                                <label class="w-100 mt-1">Tồn kho <input name="tonkho" type="number" min="0" step="any" class="form-control form-control-sm" th:value="${nl['Tonkho']}" required></label>
+                                <label class="w-100 mt-1">Tối thiểu <input name="toithieu" type="number" min="0" step="any" class="form-control form-control-sm" th:value="${nl['Toithieu']}" required></label>
+                                <button type="submit" class="btn btn-sm btn-outline-primary mt-2">Lưu</button>
+                            </form>
+                        </details>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(dsNguyenLieu)}"><td colspan="6" class="text-muted">Chưa có nguyên liệu.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+</body>
+</html>

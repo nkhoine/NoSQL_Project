@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<head><title>Thực đơn và kho - QLCafe</title></head>
+<body>
+<section class="pb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <h1 class="h3 fw-bold mb-0">Thực đơn và kho</h1>
+        <div class="d-flex flex-wrap gap-2">
+            <a th:href="@{/danhmuc}" class="btn btn-outline-success">Danh mục</a>
+            <a th:href="@{/nguyenlieu}" class="btn btn-outline-success">Nguyên liệu</a>
+            <a th:href="@{/phieunhap}" class="btn btn-success">Phiếu nhập</a>
+            <a th:href="@{/}" class="btn btn-outline-secondary">Về tổng quan</a>
+        </div>
+    </div>
+    <div th:if="${success}" th:text="${success}" class="alert alert-success" role="status"></div>
+    <div th:if="${error}" th:text="${error}" class="alert alert-danger" role="alert"></div>
+
+    <form th:action="@{/mon}" method="get" class="row g-2 align-items-end mb-3">
+        <label class="col-sm-5">Tìm món
+            <input type="search" name="keyword" th:value="${keyword}" placeholder="Tên hoặc mã món" class="form-control">
+        </label>
+        <label class="col-sm-4">Danh mục
+            <select name="madm" class="form-select">
+                <option value="">Tất cả</option>
+                <option th:each="dm : ${dsDanhMuc}" th:value="${dm['Madm']}" th:text="${dm['Tendm']}" th:selected="${dm['Madm'] == madm}"></option>
+            </select>
+        </label>
+        <div class="col-sm-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Lọc</button>
+            <a th:href="@{/mon}" class="btn btn-outline-secondary">Xóa bộ lọc</a>
+        </div>
+    </form>
+
+    <details class="card shadow-sm mb-3">
+        <summary class="card-body fw-semibold">Thêm món</summary>
+        <form th:action="@{/mon/them}" method="post" class="card-body border-top">
+            <div class="row g-2">
+                <label class="col-sm-3">Mã món <input name="mamon" class="form-control" required></label>
+                <label class="col-sm-5">Tên món <input name="tenmon" class="form-control" required></label>
+                <label class="col-sm-4">Danh mục
+                    <select name="madm" class="form-select" required>
+                        <option value="">Chọn danh mục</option>
+                        <option th:each="dm : ${dsDanhMuc}" th:value="${dm['Madm']}" th:text="${dm['Tendm']}"></option>
+                    </select>
+                </label>
+                <label class="col-sm-3">Giá M (đ) <input name="giaM" type="number" min="1" class="form-control" required></label>
+                <label class="col-sm-3">Giá L (đ) <input name="giaL" type="number" min="0" class="form-control" placeholder="Tùy chọn"></label>
+                <label class="col-sm-6">Nhãn (cách nhau bằng dấu phẩy) <input name="nhanStr" class="form-control" placeholder="Ví dụ: Món mới, Đặc trưng"></label>
+                <label class="col-sm-5">Nguyên liệu
+                    <select name="manl1" class="form-select">
+                        <option value="">Chọn nguyên liệu</option>
+                        <option th:each="nl : ${dsNguyenLieu}" th:value="${nl['Manl']}" th:text="|${nl['Tennl']} (${nl['Donvi']})|"></option>
+                    </select>
+                </label>
+                <label class="col-sm-3">Lượng dùng <input name="sl1" type="number" min="0" step="any" class="form-control"></label>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">Lưu món</button>
+        </form>
+    </details>
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-3">
+        <div class="col" th:each="mon : ${dsMon}">
+            <article class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start gap-2">
+                        <h2 class="h5" th:text="${mon['Tenmon']}"></h2>
+                        <span class="badge" th:classappend="${mon['Trangthai'] == 'Đang bán' ? 'text-bg-success' : 'text-bg-secondary'}" th:text="${mon['Trangthai']}"></span>
+                    </div>
+                    <p class="small text-muted mb-2" th:text="|Mã món ${mon['Mamon']}|"></p>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge text-bg-light border" th:each="co : ${mon['Size']}" th:text="|${co['Ten']} · ${#numbers.formatInteger(co['Gia'], 1, 'POINT')} đ|"></span>
+                        <span class="badge text-bg-warning" th:each="nhan : ${mon['Nhan']}" th:text="${nhan}"></span>
+                    </div>
+                    <details>
+                        <summary>Chỉnh sửa</summary>
+                        <form method="post" th:action="@{/mon/sua}" class="row g-2 mt-1"
+                              th:with="sizes=${mon['Size']}">
+                            <input type="hidden" name="mamon" th:value="${mon['Mamon']}">
+                            <label class="col-12">Tên món <input name="tenmon" class="form-control" th:value="${mon['Tenmon']}" required></label>
+                            <label class="col-12">Danh mục
+                                <select name="madm" class="form-select" required>
+                                    <option th:each="dm : ${dsDanhMuc}" th:value="${dm['Madm']}" th:text="${dm['Tendm']}" th:selected="${dm['Madm'] == mon['Madm']}"></option>
+                                </select>
+                            </label>
+                            <label class="col-6">Giá M (đ) <input name="giaM" type="number" min="1" class="form-control" th:value="${#lists.isEmpty(sizes) ? null : sizes[0]['Gia']}" required></label>
+                            <label class="col-6">Giá L (đ) <input name="giaL" type="number" min="0" class="form-control" th:value="${#lists.isEmpty(sizes) or #lists.size(sizes) < 2 ? null : sizes[1]['Gia']}"></label>
+                            <label class="col-12">Trạng thái
+                                <select name="trangthai" class="form-select">
+                                    <option th:selected="${mon['Trangthai'] == 'Đang bán'}">Đang bán</option>
+                                    <option th:selected="${mon['Trangthai'] == 'Ngừng bán'}">Ngừng bán</option>
+                                </select>
+                            </label>
+                            <div><button class="btn btn-sm btn-primary" type="submit">Lưu thay đổi</button></div>
+                        </form>
+                    </details>
+                    <details class="mt-2">
+                        <summary>Quản lý nhãn</summary>
+                        <form method="post" th:action="@{/mon/nhan}" class="mt-2">
+                            <input type="hidden" name="mamon" th:value="${mon['Mamon']}">
+                            <label class="w-100">Tên nhãn <input name="nhan" class="form-control form-control-sm" required></label>
+                            <button name="action" value="add" class="btn btn-sm btn-outline-success mt-2">Thêm nhãn</button>
+                            <button name="action" value="remove" class="btn btn-sm btn-outline-secondary mt-2">Gỡ nhãn</button>
+                        </form>
+                    </details>
+                </div>
+            </article>
+        </div>
+    </div>
+    <p class="alert alert-light border" th:if="${#lists.isEmpty(dsMon)}">Không có món phù hợp.</p>
+
+    <nav th:if="${totalPages > 1}" class="my-3" aria-label="Phân trang thực đơn">
+        <ul class="pagination flex-wrap mb-0">
+            <li class="page-item" th:each="p : ${#numbers.sequence(1, totalPages)}" th:classappend="${currentPage == p} ? 'active'">
+                <a class="page-link" th:href="@{/mon(page=${p},keyword=${keyword},madm=${madm})}" th:text="${p}"></a>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="ton-kho" class="card shadow-sm mt-4">
+        <div class="card-body">
+            <h2 class="h5 mb-3">Tồn kho nguyên liệu</h2>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead><tr><th>Mã</th><th>Nguyên liệu</th><th>Đơn vị</th><th class="text-end">Tồn kho</th><th class="text-end">Mức tối thiểu</th></tr></thead>
+                    <tbody>
+                    <tr th:each="nl : ${dsNguyenLieu}" th:classappend="${nl['Tonkho'] <= nl['Toithieu']} ? 'table-warning'">
+                        <td th:text="${nl['Manl']}"></td><td th:text="${nl['Tennl']}"></td><td th:text="${nl['Donvi']}"></td>
+                        <td class="text-end" th:text="${nl['Tonkho']}"></td><td class="text-end" th:text="${nl['Toithieu']}"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(dsNguyenLieu)}"><td colspan="5" class="text-muted">Chưa có nguyên liệu.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

@@ -19,6 +19,7 @@ public class BanController {
     public String list(Model model) {
         model.addAttribute("dsBan", banDAO.layTatCa());
         model.addAttribute("dsBanTrong", banDAO.layBanTrong());
+        model.addAttribute("dsKhuVuc", java.util.List.of("Tầng 1", "Tầng 2", "Sân vườn"));
         return "ban";
     }
 
@@ -54,6 +55,11 @@ public class BanController {
 
     @GetMapping("/xoa/{maban}")
     public String xoa(@PathVariable String maban, RedirectAttributes ra) {
+        org.bson.Document ban = banDAO.timTheoMa(maban);
+        if (ban != null && "Có khách".equals(ban.getString("Trangthai"))) {
+            ra.addFlashAttribute("error", "Bàn " + maban + " đang có khách, không thể xóa!");
+            return "redirect:/ban";
+        }
         banDAO.xoa(maban);
         ra.addFlashAttribute("success", "Đã xóa bàn " + maban + "!");
         return "redirect:/ban";

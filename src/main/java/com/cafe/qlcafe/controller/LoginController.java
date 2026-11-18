@@ -22,7 +22,14 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String doLogin(@RequestParam String tendn, @RequestParam String matkhau, HttpSession session, Model model) {
+    public String doLogin(@RequestParam(name = "tendn", defaultValue = "") String tendn,
+                          @RequestParam(name = "matkhau", defaultValue = "") String matkhau,
+                          HttpSession session, Model model) {
+        if (tendn.isBlank() || matkhau.isBlank()) {
+            model.addAttribute("error", "Vui lòng nhập tên đăng nhập và mật khẩu.");
+            return "login";
+        }
+
         Document nv = nhanVienDAO.dangNhap(tendn.trim(), matkhau);
         if (nv != null) {
             session.setAttribute("user", nv);

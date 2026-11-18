@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.HashSet;
+import org.bson.Document;
 
 @Controller
 @RequestMapping("/danhmuc")
@@ -43,9 +46,30 @@ public class DanhMucController {
 
     @PostMapping("/themcon")
     public String themCon(@RequestParam String madmCha, @RequestParam String madmCon, RedirectAttributes ra) {
+        if (danhMucDAO.timTheoMa(madmCha) == null || danhMucDAO.timTheoMa(madmCon) == null
+                || coDuongDan(madmCon, madmCha)) {
+            ra.addFlashAttribute("error", "Chọn hai danh mục hợp lệ và tránh liên kết vòng.");
+            return "redirect:/danhmuc";
+        }
         danhMucDAO.themDanhMucCon(madmCha, madmCon);
         ra.addFlashAttribute("success", "Đã thêm danh mục con " + madmCon + " vào " + madmCha + " ($addToSet)!");
         return "redirect:/danhmuc";
+    }
+
+    private boolean coDuongDan(String tu, String den) {
+        var canDuyet = new ArrayDeque<String>();
+        var daDuyet = new HashSet<String>();
+        canDuyet.add(tu);
+        while (!canDuyet.isEmpty()) {
+            String ma = canDuyet.remove();
+            if (den.equals(ma)) return true;
+            if (!daDuyet.add(ma)) continue;
+            Document danhMuc = danhMucDAO.timTheoMa(ma);
+            if (danhMuc != null) {
+                canDuyet.addAll(danhMuc.getList("Con", String.class, new ArrayList<>()));
+            }
+        }
+        return false;
     }
 
     @GetMapping("/xoa/{madm}")

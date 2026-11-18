@@ -60,10 +60,24 @@ public class ThongKeDAO {
     public List<Document> doanhThuTheoBanThang(String prefixThang) {
         List<Document> list = new ArrayList<>();
         hdCol().aggregate(Arrays.asList(
-                Aggregates.match(regex("Ngay", Pattern.compile("^" + prefixThang))),
+                Aggregates.match(regex("Ngay", Pattern.compile("^" + Pattern.quote(prefixThang)))),
                 Aggregates.group("$Ban.Tenban", Accumulators.sum("Doanhthu", "$Tongtien"), Accumulators.sum("Sohd", 1)),
                 Aggregates.sort(Sorts.descending("Doanhthu"))
         )).into(list);
+        return list;
+    }
+
+    /** Aggregate 5: mỗi nhân viên đã phục vụ những bàn nào ($addToSet). */
+    public List<Document> cacBanTheoNhanVien() {
+        List<Document> list = new ArrayList<>();
+        hdCol().aggregate(Arrays.asList(
+                Aggregates.group("$Nhanvien.Hoten", Accumulators.addToSet("Cacban", "$Ban.Tenban")),
+                Aggregates.sort(Sorts.ascending("_id"))
+        )).into(list);
+        for (Document d : list) {
+            List<String> ds = d.getList("Cacban", String.class);
+            if (ds != null) java.util.Collections.sort(ds);
+        }
         return list;
     }
 
