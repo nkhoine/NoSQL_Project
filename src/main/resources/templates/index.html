@@ -1,29 +1,76 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::section})}">
 <head><title>Tổng quan - QLCafe</title></head>
 <body>
-<section>
+<section class="pb-4"
+         th:with="quyen=${currentUser != null and currentUser['Taikhoan'] != null ? currentUser['Taikhoan']['Quyen'] : ''}">
     <h3 class="fw-bold mb-4">Bảng điều khiển hệ thống</h3>
-    <div class="row g-4">
-        <div class="col-md-4">
+
+    <div class="alert alert-danger" th:if="${param.error != null}">
+        Bạn không có quyền truy cập chức năng vừa chọn.
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4" th:if="${quyen != 'Pha chế'}">
             <div class="card p-4 border-top border-4 border-primary shadow-sm h-100">
                 <h5 class="fw-bold">🛒 Bán hàng POS</h5>
-                <p class="text-muted small">Quản lý gọi món, chuyển bàn và thanh toán hóa đơn.</p>
-                <a href="/banhang" class="btn btn-primary mt-auto">Mở POS</a>
+                <p class="text-muted small">Mở bàn, gọi món, chuyển bàn, thanh toán và in hóa đơn.</p>
+                <a th:href="@{/banhang}" class="btn btn-primary mt-auto">Mở POS</a>
+            </div>
+        </div>
+        <div class="col-md-4" th:if="${quyen != 'Pha chế'}">
+            <div class="card p-4 border-top border-4 border-info shadow-sm h-100">
+                <h5 class="fw-bold">🪑 Sơ đồ bàn</h5>
+                <p class="text-muted small">Quản lý bàn theo khu vực, thêm/sửa/xóa và chuyển bàn.</p>
+                <a th:href="@{/ban}" class="btn btn-info text-white mt-auto">Quản lý bàn</a>
             </div>
         </div>
         <div class="col-md-4">
             <div class="card p-4 border-top border-4 border-success shadow-sm h-100">
-                <h5 class="fw-bold">📋 Thực đơn & Kho</h5>
-                <p class="text-muted small">Quản lý danh mục món ăn và nguyên liệu pha chế.</p>
-                <a href="/mon" class="btn btn-success mt-auto">Xem Menu</a>
+                <h5 class="fw-bold">📋 Thực đơn &amp; Danh mục</h5>
+                <p class="text-muted small">Quản lý món đa size, nhãn, công thức và cây danh mục.</p>
+                <div class="d-flex gap-2 mt-auto">
+                    <a th:href="@{/mon}" class="btn btn-success flex-fill">Món</a>
+                    <a th:href="@{/danhmuc}" class="btn btn-outline-success flex-fill">Danh mục</a>
+                </div>
             </div>
         </div>
         <div class="col-md-4">
+            <div class="card p-4 border-top border-4 border-secondary shadow-sm h-100">
+                <h5 class="fw-bold">📦 Kho &amp; Phiếu nhập</h5>
+                <p class="text-muted small">Theo dõi tồn kho nguyên liệu cảnh báo sắp hết và nhập kho.</p>
+                <div class="d-flex gap-2 mt-auto">
+                    <a th:href="@{/nguyenlieu}" class="btn btn-secondary flex-fill">Kho NL</a>
+                    <a th:href="@{/phieunhap}" class="btn btn-outline-secondary flex-fill">Phiếu nhập</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4" th:if="${quyen != 'Pha chế'}">
             <div class="card p-4 border-top border-4 border-warning shadow-sm h-100">
                 <h5 class="fw-bold">📊 Thống kê</h5>
-                <p class="text-muted small">Xem báo cáo doanh thu theo ngày, nhân viên và top món.</p>
-                <a href="/thongke" class="btn btn-warning mt-auto">Xem báo cáo</a>
+                <p class="text-muted small">Báo cáo doanh thu theo ngày, nhân viên, bàn và top món.</p>
+                <a th:href="@{/thongke}" class="btn btn-warning mt-auto">Xem báo cáo</a>
+            </div>
+        </div>
+        <div class="col-md-4" th:if="${quyen != 'Pha chế'}">
+            <div class="card p-4 border-top border-4 border-danger shadow-sm h-100">
+                <h5 class="fw-bold">🎁 Khách hàng thân thiết</h5>
+                <p class="text-muted small">Tra cứu khách hàng và cộng điểm tích lũy Atomic ($inc).</p>
+                <a th:href="@{/khachhang}" class="btn btn-danger mt-auto">Quản lý khách</a>
+            </div>
+        </div>
+        <div class="col-md-4" th:if="${quyen == 'Quản lý'}">
+            <div class="card p-4 border-top border-4 border-dark shadow-sm h-100">
+                <h5 class="fw-bold">👤 Nhân viên &amp; Tài khoản</h5>
+                <p class="text-muted small">Thêm nhân viên mới, phân quyền và khóa/mở tài khoản.</p>
+                <a th:href="@{/nhanvien}" class="btn btn-dark mt-auto">Quản lý nhân viên</a>
+            </div>
+        </div>
+        <div class="col-md-4" th:if="${quyen == 'Quản lý'}">
+            <div class="card p-4 border-top border-4 border-primary shadow-sm h-100">
+                <h5 class="fw-bold">💾 Sao lưu &amp; Phục hồi</h5>
+                <p class="text-muted small">Backup/Restore database và Export/Import JSON từng collection.</p>
+                <a th:href="@{/saoluu}" class="btn btn-outline-primary mt-auto">Mở Sao lưu</a>
             </div>
         </div>
     </div>
